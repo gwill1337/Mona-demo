@@ -44,21 +44,15 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={"status": "error", "message": message},
     )
 
-
-Instrumentator().instrument(app).expose(app, endpoint="/metrics", tags=["Prometheus"])
-
 # ─── API endpoints ──────────────────────────────────────────────────────────
 from mona_core.routers import (  # noqa: F401 E402
     dashboard,
     devices,
     health,
     model,
-    monitoring,
-    tasks,
     users,
 )
 
-app.include_router(monitoring.router_prometheus)
 app.include_router(health.router)
 app.include_router(admin_router, prefix="/api/v1", tags=["Admin"])
 app.include_router(user_router, prefix="/api/v1", tags=["User"])

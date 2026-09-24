@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { apiFetch } from "../api";
+import { apiFetch, apiFetchWithRetry } from "../api";
 import {
   Server,
   Plus,
@@ -33,7 +33,7 @@ export default function DeviceAdmin() {
 
   const fetchDevices = useCallback(async () => {
     try {
-      const data = await apiFetch<Device[]>("/devices");
+      const data = await apiFetchWithRetry<Device[]>("/devices");
       setDevices(data);
       setLastFetched(new Date());
       setError("");
@@ -72,9 +72,7 @@ export default function DeviceAdmin() {
 
   useEffect(() => {
     fetchDevices();
-    const interval = setInterval(fetchDevices, 15000);
-    return () => clearInterval(interval);
-  }, [fetchDevices]);
+  }, []);
 
   const filtered = devices.filter((d) => {
     if (filter === "online") return d.is_active;

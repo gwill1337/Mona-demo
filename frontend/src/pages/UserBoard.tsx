@@ -2,7 +2,7 @@ import { ArrowLeft, Cpu, Plus, } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { AddUserModal } from "../components/modals/addUserModal";
 import type { User } from "../types/Types";
-import { apiFetch } from "../api";
+import { apiFetchWithRetry } from "../api";
 import { UserCard } from "../components/userCard";
 import { UserModal } from "../components/modals/userModal";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,7 @@ export default function UserBoard() {
 
     const fetchUsers = useCallback(async () => {
         try {
-            const data = await apiFetch<User[]>("/users");
+            const data = await apiFetchWithRetry<User[]>("/users");
             setUsers(data);
             setError("");
         } catch (e: any) {
@@ -34,9 +34,7 @@ export default function UserBoard() {
 
     useEffect(() => {
         fetchUsers();
-        const interval = setInterval(fetchUsers, 15000);
-        return () => clearInterval(interval);
-    }, [fetchUsers]);
+    }, []);
 
     return (
         <div className="min-h-screen bg-slate-950 text-white font-sans">

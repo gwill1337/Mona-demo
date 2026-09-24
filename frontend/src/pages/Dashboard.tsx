@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch } from "../api";
+import { apiFetch, apiFetchWithRetry } from "../api";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceDot, Legend,
@@ -45,7 +45,7 @@ export default function Dashboard() {
   // ─── Fetch devices list ───────────────────────────────────────────────────
   const fetchDevices = useCallback(async () => {
     try {
-      const list: Device[] = await apiFetch("/devices");
+      const list: Device[] = await apiFetchWithRetry("/devices");
       setDevices(list);
 
       if (!initializedRef.current) {
@@ -93,8 +93,6 @@ export default function Dashboard() {
   useEffect(() => {
     setLoading(true);
     fetchAll();
-    const id = setInterval(fetchAll, 20000);
-    return () => clearInterval(id);
   }, [fetchAll]);
 
   // ─── Derived data ─────────────────────────────────────────────────────────

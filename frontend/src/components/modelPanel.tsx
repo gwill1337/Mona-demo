@@ -12,14 +12,14 @@ export function ModelPanel({ onTrained }: { onTrained: () => void }) {
     const [expanded, setExpanded] = useState(false);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    const fetchModelInfo = useCallback(async () => {
-        try {
-            const res = await apiFetch<ModelInfo>("/api/v1/model-info");
-            setModelInfo(res);
-        } catch { }
-    }, []);
+    // const fetchModelInfo = useCallback(async () => {
+    //     try {
+    //         const res = await apiFetch<ModelInfo>("/api/v1/model-info");
+    //         setModelInfo(res);
+    //     } catch { }
+    // }, []);
 
-    useEffect(() => { fetchModelInfo(); }, [fetchModelInfo]);
+    // useEffect(() => { fetchModelInfo(); }, [fetchModelInfo]);
     useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
     const startPolling = useCallback((taskId: string, prevPoints: number) => {
@@ -37,7 +37,7 @@ export function ModelPanel({ onTrained }: { onTrained: () => void }) {
 
             // ── 1. Check Celery task result via /task-status ──────────────────────
             try {
-                const ts = await apiFetch<TaskStatus>(`/task-status/${taskId}`);
+                const ts = await apiFetch<TaskStatus>(`/model`);
                 // state: PENDING | STARTED | SUCCESS | FAILURE | RETRY | REVOKED
                 if (ts.state === "SUCCESS") {
                     const res = typeof ts.result === "object" && ts.result !== null
@@ -97,7 +97,7 @@ export function ModelPanel({ onTrained }: { onTrained: () => void }) {
                 setPhase({ kind: "error", text: "Training timed out. Check Celery worker logs." });
             }
         }, INTERVAL);
-    }, [fetchModelInfo, onTrained]);
+    }, [onTrained]);
 
     const handleTrain = async () => {
         if (pollRef.current) return;
@@ -114,7 +114,6 @@ export function ModelPanel({ onTrained }: { onTrained: () => void }) {
                 startPolling(d.task_id ?? "?", prevPoints);
             } else if (d.status === "ok" || d.status === "success") {
                 setPhase({ kind: "success", text: d.message ?? "Model trained successfully" });
-                await fetchModelInfo();
                 onTrained();
             } else {
                 setPhase({ kind: "error", text: d.message ?? "Unknown error from server" });
@@ -136,7 +135,6 @@ export function ModelPanel({ onTrained }: { onTrained: () => void }) {
             await apiFetch("/api/v1/model", {
                 method: "DELETE",
             });
-            await fetchModelInfo();
             setPhase({ kind: "success", text: "Model deleted. Switched to auto-mode." });
             onTrained();
         } catch (e: any) {

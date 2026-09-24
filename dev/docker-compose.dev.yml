@@ -74,64 +74,6 @@ services:
       retries: 5
       start_period: 15s
 
-  celery-worker:
-    build:
-      context: ..
-      dockerfile: dev/Dockerfile.dev.fastapi
-    image: mona-api-dev:local
-    container_name: mona-celery-worker-dev
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      api:
-        condition: service_healthy
-    env_file:
-      - .env.dev
-    environment:
-      LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
-      PYTHONPATH: /app/mona_core
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      REDIS_URL: redis://redis:6379
-      PROMETHEUS_URL: http://prometheus:9090
-      # Comma-separated jobName:host pairs for physical PCs, e.g. "pc-test:10.0.0.8"
-      # Leave empty and manage devices via the Admin panel instead, if you prefer.
-      EXPORTERS: ${EXPORTERS:-}
-    volumes:
-      - ..:/app
-      - api_venv:/app/.venv
-    working_dir: /app
-    command: uv run celery -A celery_conf worker --loglevel=info
-
-  celery-beat:
-    build:
-      context: ..
-      dockerfile: dev/Dockerfile.dev.fastapi
-    image: mona-api-dev:local
-    container_name: mona-celery-beat-dev
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    env_file:
-      - .env.dev
-    environment:
-      LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
-      PYTHONPATH: /app/mona_core
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      REDIS_URL: redis://redis:6379
-    volumes:
-      - ..:/app
-      - api_venv:/app/.venv
-    working_dir: /app
-    command: uv run celery -A celery_conf beat --loglevel=info -s /tmp/celerybeat-schedule
-
   react:
     build:
       context: ..
@@ -148,22 +90,6 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
 
-  prometheus:
-    image: prom/prometheus:v2.55.1
-    container_name: mona-prometheus-dev
-    restart: unless-stopped
-    volumes:
-      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/prometheus
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-      - --web.enable-lifecycle
-    ports:
-      - "30391:9090"
-    depends_on:
-      - api
-
 volumes:
   pgdata:
     name: mona_pgdata_dev
@@ -173,5 +99,3 @@ volumes:
     name: mona_api_venv_dev
   react_node_modules:
     name: mona_react_node_modules_dev
-  prometheus-data:
-    name: mona_prometheus_data_dev
