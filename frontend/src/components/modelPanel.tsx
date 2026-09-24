@@ -54,7 +54,6 @@ export function ModelPanel({ onTrained }: { onTrained: () => void }) {
                     }
 
                     stop();
-                    await fetchModelInfo();
 
                     const infoRes = await apiFetch<ModelInfo>("/model-info");
                     const info: ModelInfo = infoRes ?? { status: "no_model" };
