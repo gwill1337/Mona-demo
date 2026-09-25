@@ -78,6 +78,11 @@ export default function LoginPage() {
                 <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 overflow-hidden shadow-2xl shadow-black/50">
                     <div className="h-px w-full bg-linear-to-r from-transparent via-cyan-500 to-transparent" />
                     <div className="p-8">
+                        <div className="flex justify-center">
+                            <h2 className="text-slate-400/85 font-semibold text-lg pb-2">
+                                This is demo
+                            </h2>
+                        </div>
                         <div className="flex justify-center mb-6">
                             <div className="p-4 rounded-2xl bg-cyan-500/10 text-cyan-400">
                                 <Shield size={36} />
@@ -91,6 +96,11 @@ export default function LoginPage() {
                         <p className="text-center text-slate-400 text-sm mt-1 mb-8">
                             Administrator Login
                         </p>
+                        <div className="flex justify-center">
+                            <h2 className="text-slate-400/85 font-semibold text-xl pb-2">
+                                Username: demo / Password: demo
+                            </h2>
+                        </div>
 
                         <div className="space-y-5">
                             <div>
@@ -116,9 +126,9 @@ export default function LoginPage() {
                                             : "border-slate-700 focus:border-cyan-500 focus:ring-cyan-500/30"}`}
                                     />
                                 </div>
-                                    {fieldErrors.username && (
-                                        <p className="mt-1.5 text-xs text-red-400">{fieldErrors.username}</p>
-                                    )}
+                                {fieldErrors.username && (
+                                    <p className="mt-1.5 text-xs text-red-400">{fieldErrors.username}</p>
+                                )}
                             </div>
                             <div>
 
@@ -142,9 +152,9 @@ export default function LoginPage() {
                                             : "border-slate-700 focus:border-cyan-500 focus:ring-cyan-500/30"}`}
                                     />
                                 </div>
-                                    {fieldErrors.password && (
-                                        <p className="mt-1.5 text-xs text-red-400">{fieldErrors.password}</p>
-                                    )}
+                                {fieldErrors.password && (
+                                    <p className="mt-1.5 text-xs text-red-400">{fieldErrors.password}</p>
+                                )}
                             </div>
 
                             {error && (

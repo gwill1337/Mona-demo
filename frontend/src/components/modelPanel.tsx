@@ -1,130 +1,22 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { type TaskStatus, type ModelInfo, type TrainPhase, type TrainResponse, type TaskResultPayload } from "../types/Types";
+import { useEffect, useRef, useState } from "react";
+import { type ModelInfo, type TrainPhase } from "../types/Types";
 import { apiFetch } from "../api";
 import { AlertTriangle, BrainCircuit, ChevronDown, Trash2, X, Zap } from "lucide-react";
 
 export function ModelPanel({ onTrained }: { onTrained: () => void }) {
-    const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
+    const [modelInfo, _setModelInfo] = useState<ModelInfo | null>(null);
     const [trainHours, setTrainHours] = useState("1");
     const [trainNote, setTrainNote] = useState("");
     const [phase, setPhase] = useState<TrainPhase>({ kind: "idle" });
     const [deleting, setDeleting] = useState(false);
     const [expanded, setExpanded] = useState(false);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    // const fetchModelInfo = useCallback(async () => {
-    //     try {
-    //         const res = await apiFetch<ModelInfo>("/api/v1/model-info");
-    //         setModelInfo(res);
-    //     } catch { }
-    // }, []);
-
-    // useEffect(() => { fetchModelInfo(); }, [fetchModelInfo]);
     useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
-    const startPolling = useCallback((taskId: string, prevPoints: number) => {
-        let elapsed = 0;
-        const INTERVAL = 2000;  // poll every 2s
-        const TIMEOUT = 120000;
-
-        const stop = () => {
-            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-        };
-
-        pollRef.current = setInterval(async () => {
-            elapsed += INTERVAL;
-            setPhase({ kind: "polling", taskId, elapsed });
-
-            // ── 1. Check Celery task result via /task-status ──────────────────────
-            try {
-                const ts = await apiFetch<TaskStatus>(`/model`);
-                // state: PENDING | STARTED | SUCCESS | FAILURE | RETRY | REVOKED
-                if (ts.state === "SUCCESS") {
-                    const res = typeof ts.result === "object" && ts.result !== null
-                        ? (ts.result as TaskResultPayload)
-                        : {};
-
-                    if (res.status === "error") {
-                        stop();
-                        setPhase({
-                            kind: "error",
-                            text: res.message ?? "Training failed"
-                        });
-                        return;
-                    }
-
-                    stop();
-
-                    const infoRes = await apiFetch<ModelInfo>("/model-info");
-                    const info: ModelInfo = infoRes ?? { status: "no_model" };
-
-                    setModelInfo(info);
-
-                    const pts = info.status === "ok" ? info.model!.points_count : prevPoints;
-                    setPhase({ kind: "success", text: `Model trained on ${pts} points` });
-
-                    onTrained();
-                    return;
-                }
-
-                if (ts.state === "FAILURE") {
-                    stop();
-                    const msg = typeof ts.result === "string" ? ts.result : JSON.stringify(ts.result);
-                    setPhase({ kind: "error", text: `Worker error: ${msg}` });
-                    return;
-                }
-
-            } catch {
-                // /task-status not available yet — fall through to model-info fallback
-            }
-
-            // ── 2. Fallback: if task-status endpoint missing, detect via model-info ─
-            try {
-                const info = await apiFetch<ModelInfo>("/model-info");
-                if (info.status === "ok" && (info.model?.points_count ?? 0) !== prevPoints) {
-                    stop();
-                    setModelInfo(info);
-                    setPhase({ kind: "success", text: `Model trained on ${info.model!.points_count} points` });
-                    onTrained();
-                    return;
-                }
-
-            } catch { }
-
-            if (elapsed >= TIMEOUT) {
-                stop();
-                setPhase({ kind: "error", text: "Training timed out. Check Celery worker logs." });
-            }
-        }, INTERVAL);
-    }, [onTrained]);
 
     const handleTrain = async () => {
         if (pollRef.current) return;
-        const prevPoints = modelInfo?.model?.points_count ?? 0;
-        setPhase({ kind: "submitting" });
-        try {
-            const params = new URLSearchParams({ hours: trainHours, note: trainNote });
-            const d = await apiFetch<TrainResponse>(`/train?${params}`, {
-                method: "POST",
-            });
-
-            if (d.status === "accepted") {
-                setPhase({ kind: "polling", taskId: d.task_id ?? "?", elapsed: 0 });
-                startPolling(d.task_id ?? "?", prevPoints);
-            } else if (d.status === "ok" || d.status === "success") {
-                setPhase({ kind: "success", text: d.message ?? "Model trained successfully" });
-                onTrained();
-            } else {
-                setPhase({ kind: "error", text: d.message ?? "Unknown error from server" });
-            }
-        } catch (e: any) {
-            if (e.status === 403) {
-                setPhase({ kind: "error", text: "Training the model requires admin privileges" });
-            } else {
-                setPhase({ kind: "error", text: `error: ${e.message}`})
-            }
-
-        }
+        setPhase({ kind: "success", text: "Not available in demo"})
     };
 
     const handleDelete = async () => {

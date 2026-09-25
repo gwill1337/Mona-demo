@@ -33,8 +33,14 @@ export default function DeviceAdmin() {
 
   const fetchDevices = useCallback(async () => {
     try {
-      const data = await apiFetchWithRetry<Device[]>("/devices");
-      setDevices(data);
+      // const data = await apiFetchWithRetry<Device[]>("/devices");
+      const data = await apiFetchWithRetry<any>("/devices");
+      const deviceList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.devices)
+          ? data.devices
+          : [];
+      setDevices(deviceList);
       setLastFetched(new Date());
       setError("");
     } catch (e: any) {
@@ -105,6 +111,11 @@ export default function DeviceAdmin() {
                 <span className="text-xs font-semibold text-cyan-400/80 uppercase tracking-[0.2em]">
                   Infrastructure
                 </span>
+                <div className="flex">
+                  <h2 className="text-slate-400/85 font-semibold ">
+                    This is demo
+                  </h2>
+                </div>
               </div>
               <h1 className="text-3xl font-bold tracking-tight text-white">
                 Device Registry

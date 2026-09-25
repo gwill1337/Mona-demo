@@ -34,7 +34,10 @@ export default function Dashboard() {
 
   // Stable color map — order determined by devices array from /devices
   const deviceColorMap: Record<string, string> = {};
-  devices.forEach((d, i) => { deviceColorMap[d.name] = getDeviceColor(i); });
+  // devices.forEach((d, i) => { deviceColorMap[d.name] = getDeviceColor(i); });
+  (Array.isArray(devices) ? devices : []).forEach((d, i) => {
+    deviceColorMap[d.name] = getDeviceColor(i);
+  });
 
   // ─── Selected devices → URL sync ─────────────────────────────────────────
   const handleSetSelected = useCallback((next: string[]) => {
@@ -168,7 +171,7 @@ export default function Dashboard() {
           backgroundSize: "48px 48px",
         }}
       />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-175 h-px bg-linear-to-r from-transparent via-cyan-500/30 to-transparent" />
+      <div className="fixed top-0 left-1/2 translate-x-1/2 w-175 h-px bg-linear-to-r from-transparent via-cyan-500/30 to-transparent" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
@@ -197,7 +200,11 @@ export default function Dashboard() {
           />
 
           <PeriodSelector value={hours} onChange={setHours} />
-
+          <div className="flex justify-center">
+            <h2 className="text-slate-400/85 font-semibold text-xl pb-2">
+              This is demo, several functions might not work
+            </h2>
+          </div>
           <div className="flex-1" />
 
           {lastFetched && (
@@ -373,12 +380,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <style>{`
+      {/* <style>{`
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
-      `}</style>
+      `}</style> */}
     </div>
   );
 }
